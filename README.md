@@ -1,2 +1,2 @@
-# YAGPDB-reaction-menu
-Reaction script for multiple trigger scripts
+# YAGPDB Reaction Menu
+The goal of this project is to have 1 reaction Custom Command with multiple Trigger Commands
