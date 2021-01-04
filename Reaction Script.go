@@ -1,5 +1,5 @@
 {{/*reaction script, use trigger type: Reaction/Added Reactions Only*/}}
- 
+
 {{/*Converter for interfase types from DB*/}}
 {{- define "standardize"}}{{/*Thanks to Satty*/}}
 {{- $val:= (.Get "val")}}{{$rDict := sdict}}{{$rVal := ""}}
@@ -14,11 +14,11 @@
     {{- else}}{{$rVal = $val}}{{end}}
 {{- (.Set "ret" $rVal)}}
 {{- end}}
- 
+
 {{define "getEmojiName"}}
 	{{with .emoji}}{{$.Set "name" (print (or (and .Animated "a:") "") .Name (or (and .ID (print ":" .ID)) ""))}}{{end}}
 {{end}}
- 
+
 {{if .ReactionAdded}}
 	{{template "getEmojiName" ($emoji := sdict "emoji" .Reaction.Emoji)}}
 	{{if ($db:= (dbGet 0 (print "EM" .Reaction.ChannelID .Reaction.MessageID)).Value)}}
