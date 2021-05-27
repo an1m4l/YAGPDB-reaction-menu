@@ -20,29 +20,32 @@
 {{end}}
 
 {{if .ReactionAdded}}
+	{{$delReaction:= 1}}
 	{{template "getEmojiName" ($emoji := sdict "emoji" .Reaction.Emoji)}}
+	{{$reaction:=(print (or (and ($x:=($z:=.Reaction.Emoji).Animated) "a:") "") $z.Name (or (and $z.ID (print ":" $z.ID)) ""))}}
 	{{if ($db:= (dbGet 0 (print "EM" .Reaction.ChannelID .Reaction.MessageID)).Value)}}
-		{{$delReaction:= 1}}
 		{{template "standardize" ($x:= sdict "val" $db)}}{{$inst:= $x.ret}}
 		{{if or (not $inst.users) (in $inst.users .Reaction.UserID)}}
-			{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if eq .emoji $emoji.name}}{{$emoji.Set "pos" $i}}{{$emoji.Set "match" 1}}{{end}}{{end}}{{end}}
-			{{if $emoji.match}}
+			{{$match:= 0}}
+			{{$pos:= 0}}
+			{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if eq .emoji $reaction}}{{$pos = $i}}{{$match = 1}}{{end}}{{end}}{{end}}
+			{{if $match}}
 				{{$delReaction:= 0}}
-				{{editMessage .Reaction.ChannelID .Reaction.MessageID (cembed (index $inst.embeds $emoji.pos))}}
+				{{editMessage .Reaction.ChannelID .Reaction.MessageID (cembed (index $inst.embeds $pos))}}
 				{{deleteAllMessageReactions .Channel.ID .Message.ID}}
-				{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if not (eq $i $emoji.pos)}}{{addMessageReactions $.Reaction.ChannelID $.Reaction.MessageID $e.emoji}}{{end}}{{end}}{{end}}
+				{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if not (eq $i $pos)}}{{addMessageReactions $.Reaction.ChannelID $.Reaction.MessageID $e.emoji}}{{end}}{{end}}{{end}}
 				{{if $inst.closeemoji}}{{addMessageReactions .Reaction.ChannelID .Reaction.MessageID $inst.closeemoji}}{{end}}
 			{{end}}
 			{{if $inst.closeemoji}}
-				{{if eq $inst.closeemoji $emoji.name}}
+				{{if eq $inst.closeemoji $reaction}}
 					{{$delReaction:= 0}}
 					{{dbDel 0 (print "EM" .Reaction.ChannelID .Reaction.MessageID)}}
 					{{deleteMessage .Reaction.ChannelID .Reaction.MessageID 1}}
 				{{end}}
 			{{end}}
 		{{end}}
-		{{if $delReaction}}
-			{{deleteMessageReaction .Reaction.ChannelID .Reaction.MessageID .Reaction.UserID $emoji.name}}
-		{{end}}
+	{{end}}
+	{{if $delReaction}}
+		{{deleteMessageReaction .Reaction.ChannelID .Reaction.MessageID .Reaction.UserID $reaction}}
 	{{end}}
 {{end}}
