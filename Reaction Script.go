@@ -1,27 +1,18 @@
 {{/*reaction script, use trigger type: Reaction/Added Reactions Only*/}}
 
 {{/*Converter for interfase types from DB*/}}
-{{- define "standardize"}}{{/*Thanks to Satty*/}}
-{{- $val:= (.Get "val")}}{{$rDict := sdict}}{{$rVal := ""}}
-    {{- if (eq (printf "%T" $val) `map[string]interface {}`)}}{{$rVal = sdict $val}}
-    {{- else if (eq (printf "%T" $val) `templates.SDict`)}}{{$rVal = $val}}
-    {{- else if (eq (printf "%T" $val) `[]interface {}`)}}{{$rVal = cslice.AppendSlice $val}}
-    {{- else if (eq (printf "%T" $val) `templates.Slice`)}}{{$rVal = $val}}{{end}}
-    {{- if (print $rVal)}}
-    {{- range $k,$v := $rVal}}
-    {{- if in (cslice `map[string]interface {}` `[]interface {}` `templates.SDict` `templates.Slice`) (printf "%T" $val)}}
-    {{- $rDict.Set "val" $v}}{{template "standardize" $rDict}}{{$rVal.Set $k ($rDict.Get "ret")}}{{end}}{{end}}
-    {{- else}}{{$rVal = $val}}{{end}}
-{{- (.Set "ret" $rVal)}}
+{{- define "standardize"}}
+    {{- $types:=sdict `templates.SDict` 1 `templates.Slice` 1 `map[string]interface {}` 2 `[]interface {}` 3}}
+    {{- $rVal:= ""}}
+    {{- if $t:= $types.Get (printf "%T" .val)}}
+        {{- if eq $t 1}}{{$rVal = .val}}{{else if eq $t 2}}{{$rVal = sdict .val}}{{else if eq $t 3}}{{$rVal = cslice.AppendSlice .val}}{{end}}
+        {{- range $k,$v := $rVal}}{{if $types.Get (printf "%T" $v)}}{{template "standardize" $x:= sdict "val" $v}}{{$rVal.Set $k $x.ret}}{{end}}{{end}}
+    {{- end}}
+    {{- .Set "ret" (or $rVal .val)}}
 {{- end}}
-
-{{define "getEmojiName"}}
-	{{with .emoji}}{{$.Set "name" (print (or (and .Animated "a:") "") .Name (or (and .ID (print ":" .ID)) ""))}}{{end}}
-{{end}}
 
 {{if .ReactionAdded}}
 	{{$delReaction:= 1}}
-	{{template "getEmojiName" ($emoji := sdict "emoji" .Reaction.Emoji)}}
 	{{$reaction:=(print (or (and ($x:=($z:=.Reaction.Emoji).Animated) "a:") "") $z.Name (or (and $z.ID (print ":" $z.ID)) ""))}}
 	{{if ($db:= (dbGet 0 (print "EM" .Reaction.ChannelID .Reaction.MessageID)).Value)}}
 		{{template "standardize" ($x:= sdict "val" $db)}}{{$inst:= $x.ret}}
