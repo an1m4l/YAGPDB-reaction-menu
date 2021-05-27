@@ -3,10 +3,10 @@
 {{/*emoji formats a:name:id | name:id | name (unicode character)*/}}
 {{.Set "defemoji" (cslice "1️⃣" "2️⃣" "3️⃣" "4️⃣" "5️⃣" "6️⃣" "7️⃣" "8️⃣" "9️⃣" "🔟")}}{{/*Default emoji when not set in the embeds (you can use the same order you want for all and save space with this)*/}}
 {{.Set "closeemoji" "❌"}}{{/*set the emoji for closing the embed (this isn't included in the public one)*/}}
-{{.Set "publicarg" (cslice 00000000000000)}}{{/*set the rolesid who can make a embed menu public*/}}
-{{.Set "mentionarg" (cslice 000000000000000)}}{{/*set the rolesid who can make a embed for a user with a mention*/}}
-{{.Set "duration" 300}}{{/*set the duration in seconds when an embed auto gets deleted*/}}
-{{/*.Set "channelid" 0}}{{/*this set the output channel, for trigger channel delete this line*/}}
+{{.Set "publicarg" (cslice 00000000000000)}}{{/*set the role id's who can make a embed menu public and doesn't get deleted after the duration*/}}
+{{.Set "mentionarg" (cslice 000000000000000)}}{{/*set the role id's who can make a embed for a user with a mention*/}}
+{{.Set "duration" 300}}{{/*set the duration in seconds (max 24h) when an embed auto gets deleted*/}}
+{{/*.Set "channelid" 0}}{{/*this set the default output channel, for trigger channel delete this line or comment out (default)*/}}
 
 {{/*first embed is your start page (menu)*/}}
 {{$embeds:= cslice
