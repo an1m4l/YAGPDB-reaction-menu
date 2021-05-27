@@ -14,7 +14,7 @@
 {{if .ReactionAdded}}
 	{{$delReaction:= 1}}
 	{{$reaction:=(print (or (and ($x:=($z:=.Reaction.Emoji).Animated) "a:") "") $z.Name (or (and $z.ID (print ":" $z.ID)) ""))}}
-	{{if ($db:= (dbGet 0 (print "EM" .Reaction.ChannelID .Reaction.MessageID)).Value)}}
+	{{if ($db:= (dbGet 0 (print "EM" ($cID:= .Reaction.ChannelID) ($mID:= .Reaction.MessageID))).Value)}}
 		{{template "standardize" ($x:= sdict "val" $db)}}{{$inst:= $x.ret}}
 		{{if or (not $inst.users) (in $inst.users .Reaction.UserID)}}
 			{{$match:= 0}}
@@ -22,16 +22,16 @@
 			{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if eq .emoji $reaction}}{{$pos = $i}}{{$match = 1}}{{end}}{{end}}{{end}}
 			{{if $match}}
 				{{$delReaction:= 0}}
-				{{editMessage .Reaction.ChannelID .Reaction.MessageID (cembed (index $inst.embeds $pos))}}
+				{{editMessage $cID $mID (cembed (index $inst.embeds $pos))}}
 				{{deleteAllMessageReactions .Channel.ID .Message.ID}}
-				{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if not (eq $i $pos)}}{{addMessageReactions $.Reaction.ChannelID $.Reaction.MessageID $e.emoji}}{{end}}{{end}}{{end}}
-				{{if $inst.closeemoji}}{{addMessageReactions .Reaction.ChannelID .Reaction.MessageID $inst.closeemoji}}{{end}}
+				{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if not (eq $i $pos)}}{{addMessageReactions $cID $mID $e.emoji}}{{end}}{{end}}{{end}}
+				{{if $inst.closeemoji}}{{addMessageReactions $cID $mID $inst.closeemoji}}{{end}}
 			{{end}}
 			{{if $inst.closeemoji}}
 				{{if eq $inst.closeemoji $reaction}}
 					{{$delReaction:= 0}}
-					{{dbDel 0 (print "EM" .Reaction.ChannelID .Reaction.MessageID)}}
-					{{deleteMessage .Reaction.ChannelID .Reaction.MessageID 1}}
+					{{dbDel 0 (print "EM" $cID $mID)}}
+					{{deleteMessage $cID $mID 1}}
 				{{end}}
 			{{end}}
 		{{end}}
