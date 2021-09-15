@@ -14,9 +14,19 @@
 {{if .ReactionAdded}}
 	{{$delReaction:= 1}}
 	{{$reaction:=(print (or (and ($x:=($z:=.Reaction.Emoji).Animated) "a:") "") $z.Name (or (and $z.ID (print ":" $z.ID)) ""))}}
-	{{if ($db:= (dbGet 0 (print "EM" ($cID:= .Reaction.ChannelID) ($mID:= .Reaction.MessageID))).Value)}}
-		{{template "standardize" ($x:= sdict "val" $db)}}{{$inst:= $x.ret}}
-		{{if or (not $inst.users) (in $inst.users .Reaction.UserID)}}
+	{{if ($inst:= (dbGet 0 (print "EM" ($cID:= .Reaction.ChannelID) ($mID:= .Reaction.MessageID))).Value)}}
+		{{/*template "standardize" ($x:= sdict "val" $db)}}{{$inst:= $x.ret}}
+		{{$db}}
+		{{(printf "%T" $db)}}
+		{{(printf "%T" (index $db.defemoji 0))}}
+		{{(printf "%T" $db.duration)}}
+		{{(printf "%T" (index $db.embeds 0))}}
+		{{(printf "%T" $db.mentionarg)}}
+		{{(printf "%T" $db.publicargarg)}}
+		{{(printf "%T" (index $db.users 0))*/}}
+		```{{(printf "%T" .Reaction.UserID)}}```
+		```{{(printf "%T" (index $inst.users 0))}}```
+		{{if or (not $inst.users) (in $inst.users .Reaction.UserID)}}in users
 			{{$match:= 0}}
 			{{$pos:= 0}}
 			{{range $i, $e:= $inst.embeds}}{{if .emoji}}{{if eq .emoji $reaction}}{{$pos = $i}}{{$match = 1}}{{end}}{{end}}{{end}}
